@@ -214,3 +214,16 @@ end
     a = Iff(x, y)
     @test "$a" == "(= true false)"
 end
+
+@testitem "multithreaded context creation" begin
+    import Base.Threads
+
+    Threads.@threads :greedy for n in 1:100
+        ctx = Context()
+        s = Solver(ctx)
+        x = [IntVar("x$r", ctx) for r in 1:n]
+        add(s, sum(x[r] for r in 1:n) == IntVal(0, ctx))
+        r = check(s)
+        @test r == CheckResult(:sat)
+    end
+end

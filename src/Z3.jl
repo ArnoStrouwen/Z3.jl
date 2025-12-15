@@ -30,10 +30,16 @@ function finalize_ctx(c)
     end
 end
 
+const CTX_LOCK = ReentrantLock()
+
 function Context()
-    cfg = Z3_mk_config()
+    cfg = lock(CTX_LOCK) do
+        Z3_mk_config()
+    end
     ctx = Z3_mk_context(cfg)
-    Z3_del_config(cfg)
+    lock(CTX_LOCK) do
+        Z3_del_config(cfg)
+    end
     c = Context(ctx)
     return c
 end
@@ -323,4 +329,3 @@ function to_symbol(s::Union{String,Int}, ctx=nothing)
 end
 
 end
-
